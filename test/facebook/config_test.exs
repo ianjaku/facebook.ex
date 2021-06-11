@@ -5,28 +5,28 @@ defmodule Facebook.ConfigTest do
 
   describe "init/1" do
     test "uses default values when no other values are specified" do
-      :ok = Application.stop(:facebook_updated)
-      {:ok, _} = Application.ensure_all_started(:facebook_updated)
+      :ok = Application.stop(:facebook)
+      {:ok, _} = Application.ensure_all_started(:facebook)
       assert Config.graph_url() == "https://graph.facebook.com"
       assert Config.request_conn_timeout() == nil
     end
 
     test "uses values from config when they are present" do
-      :ok = Application.stop(:facebook_updated)
+      :ok = Application.stop(:facebook)
 
       set_config(%{
         graph_url: "https://graph.facebook.com/v1",
         request_conn_timeout: 100
       })
 
-      {:ok, _} = Application.ensure_all_started(:facebook_updated)
+      {:ok, _} = Application.ensure_all_started(:facebook)
 
       assert Config.graph_url() == "https://graph.facebook.com/v1"
       assert Config.request_conn_timeout() == 100
     end
 
     test "reads environment variables when {:system, _} tuple is used" do
-      :ok = Application.stop(:facebook_updated)
+      :ok = Application.stop(:facebook)
 
       set_config(%{
         graph_url: {:system, "GRAPH_URL"},
@@ -38,14 +38,14 @@ defmodule Facebook.ConfigTest do
         "REQUEST_CONN_TIMEOUT" => "100"
       })
 
-      {:ok, _} = Application.ensure_all_started(:facebook_updated)
+      {:ok, _} = Application.ensure_all_started(:facebook)
 
       assert Config.graph_url() == "https://graph.facebook.com/v1"
       assert Config.request_conn_timeout() == 100
     end
 
     test "fails to start when {:system, _} tuple is used but env is missing" do
-      :ok = Application.stop(:facebook_updated)
+      :ok = Application.stop(:facebook)
 
       set_config(%{
         graph_url: {:system, "GRAPH_URL"},
@@ -53,30 +53,30 @@ defmodule Facebook.ConfigTest do
       })
 
       assert {:error,
-              {:facebook_updated,
+              {:facebook,
                {{:shutdown,
                  {:failed_to_start_child, Facebook.Config,
                   {%ArgumentError{
                      message:
                        "could not fetch environment variable \"GRAPH_URL\" because it is not set"
                    }, _}}},
-                {Facebook, :start, [:normal, []]}}}} = Application.ensure_all_started(:facebook_updated)
+                {Facebook, :start, [:normal, []]}}}} = Application.ensure_all_started(:facebook)
     end
   end
 
   defp set_config(values) do
-    original_config = Application.get_all_env(:facebook_updated)
+    original_config = Application.get_all_env(:facebook)
 
     for {key, value} <- values do
-      Application.put_env(:facebook_updated, key, value)
+      Application.put_env(:facebook, key, value)
     end
 
     on_exit(fn ->
       for {key, _value} <- values do
-        Application.put_env(:facebook_updated, key, Keyword.get(original_config, key))
+        Application.put_env(:facebook, key, Keyword.get(original_config, key))
       end
 
-      {:ok, _} = Application.ensure_all_started(:facebook_updated)
+      {:ok, _} = Application.ensure_all_started(:facebook)
     end)
   end
 

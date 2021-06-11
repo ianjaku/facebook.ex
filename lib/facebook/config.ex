@@ -97,7 +97,7 @@ defmodule Facebook.Config do
   end
 
   defp get_config_value(key) do
-    :facebook_updated
+    :facebook
     |> Application.get_env(key)
     |> parse_config_value()
   end
